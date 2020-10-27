@@ -28,15 +28,13 @@ RUN docker-php-ext-install pdo_mysql zip exif pcntl
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Add user for laravel application
-RUN groupadd -g 1000 www
-RUN useradd -u 1000 -ms /bin/bash -g www www
-
 # Copy existing application directory contents
 COPY . /var/www
 
-# Copy existing application directory permissions
-RUN chmod -R 777 /var/www
+# Handle permissions
+RUN chown -R www-data:www-data /var/www
+RUN chmod -R 775 /var/www/storage/
+RUN chmod -R 775 /var/www/bootstrap/cache/
 
 # Init laravel
 RUN composer install
@@ -44,7 +42,7 @@ COPY .env.example .env
 RUN php artisan key:generate
 
 # Change current user to www
-USER www
+USER www-data
 
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
