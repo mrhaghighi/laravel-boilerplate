@@ -4,9 +4,11 @@ docker-build-master:
   services:
     - docker:dind
   before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker login -u "$PRIVATE_REGISTRY_USER" -p "$PRIVATE_REGISTRY_PASSWORD" $PRIVATE_REGISTRY
   script:
-    - docker build --pull -t "$CI_REGISTRY_IMAGE" .
-    - docker push "$CI_REGISTRY_IMAGE"
+      - docker pull $PRIVATE_REGISTRY/$CI_REGISTRY_IMAGE:latest || true
+      - docker build --cache-from $PRIVATE_REGISTRY/$CI_REGISTRY_IMAGE:latest --tag $PRIVATE_REGISTRY/$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --tag $PRIVATE_REGISTRY/$CI_REGISTRY_IMAGE:latest .
+      - docker push $PRIVATE_REGISTRY/$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+      - docker push $PRIVATE_REGISTRY/$CI_REGISTRY_IMAGE:latest
   only:
     - master
